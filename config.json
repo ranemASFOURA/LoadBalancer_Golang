@@ -1,0 +1,24 @@
+{
+  "healthCheckInterval": "60s",
+  "servers": [
+    {
+      "Name": "Server1",
+      "URL": "http://localhost:8081",
+      "ActiveConnections": 0,
+      "Healthy": true
+    },
+    {
+      "Name": "Server2",
+      "URL": "http://localhost:8082",
+      "ActiveConnections": 0,
+      "Healthy": true
+    },
+    {
+      "Name": "Server3",
+      "URL": "http://localhost:8083",
+      "ActiveConnections": 0,
+      "Healthy": true
+    }
+  ],
+  "listenPort": ":8080"
+}

@@ -1,9 +1,0 @@
-servers:
-  - name: "Server1"
-    url: "http://localhost:8081"
-  - name: "Server2"
-    url: "http://localhost:8082"
-  - name: "Server3"
-    url: "http://localhost:8083"
-
-health_check_interval: 60  # Health check interval in seconds

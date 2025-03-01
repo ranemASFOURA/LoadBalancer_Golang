@@ -1,155 +1,129 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
+	"net/http/httputil"
+	"net/url"
+	"os"
 	"sync"
 	"time"
 
-	"gopkg.in/yaml.v3"
+	"load-balancer-project/config"
 )
 
-// Server struct represents a backend server's configuration
-type Server struct {
-	Name string `yaml:"name"`
-	URL  string `yaml:"url"`
-}
-
-// Config struct holds load balancer settings
-type Config struct {
-	Servers             []Server `yaml:"servers"`
-	HealthCheckInterval int      `yaml:"health_check_interval"`
-}
-
-// ServerState keeps track of each server's status
-type ServerState struct {
-	Name        string
-	URL         string
-	Connections int
-	Alive       bool
-}
-
-// LoadBalancer struct manages server selection and load distribution
+// LoadBalancer struct to manage multiple servers
 type LoadBalancer struct {
-	servers []*ServerState
+	servers []config.Server
 	mu      sync.Mutex
+	logger  *log.Logger
 }
 
-// NewLoadBalancer initializes a Load Balancer with given servers
-func NewLoadBalancer(servers []Server) *LoadBalancer {
-	lb := &LoadBalancer{}
-	for _, srv := range servers {
-		lb.servers = append(lb.servers, &ServerState{
-			Name:  srv.Name,
-			URL:   srv.URL,
-			Alive: true,
-		})
-	}
-	return lb
-}
-
-// LoadConfig reads the configuration from a YAML file
-func LoadConfig(filename string) (*Config, error) {
-	data, err := ioutil.ReadFile(filename)
+// Function to create a new Load Balancer
+func NewLoadBalancer(servers []config.Server) *LoadBalancer {
+	// فتح ملف اللوج
+	file, err := os.OpenFile("logfile.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return nil, err
+		log.Fatalf("Error opening log file: %v", err)
 	}
-	var config Config
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		return nil, err
+	logger := log.New(file, "LoadBalancer: ", log.LstdFlags)
+
+	return &LoadBalancer{
+		servers: servers,
+		logger:  logger,
 	}
-	return &config, nil
 }
 
-// GetLeastConnectionsServer selects the backend server with the least connections
-func (lb *LoadBalancer) GetLeastConnectionsServer() *ServerState {
+// Function to get the server with the least active connections
+func (lb *LoadBalancer) getLeastConnectionsServer() *config.Server {
 	lb.mu.Lock()
 	defer lb.mu.Unlock()
 
-	var bestServer *ServerState
-	for _, server := range lb.servers {
-		if server.Alive && (bestServer == nil || server.Connections < bestServer.Connections) {
-			bestServer = server
+	var leastLoadedServer *config.Server
+	minConnections := int(^uint(0) >> 1) // Max int value
+
+	for i := range lb.servers {
+		if lb.servers[i].Healthy && lb.servers[i].ActiveConnections < minConnections {
+			leastLoadedServer = &lb.servers[i]
+			minConnections = lb.servers[i].ActiveConnections
 		}
 	}
-	if bestServer != nil {
-		bestServer.Connections++
-		fmt.Printf("Load Balancer: Redirecting request to %s (Active connections: %d)\n", bestServer.Name, bestServer.Connections)
-	}
-	return bestServer
+
+	return leastLoadedServer
 }
 
-// ReleaseConnection decrements the connection count after a request is completed
-func (lb *LoadBalancer) ReleaseConnection(server *ServerState) {
-	lb.mu.Lock()
-	defer lb.mu.Unlock()
-	server.Connections--
-}
-
-// HealthCheck continuously checks the health of backend servers
-func (lb *LoadBalancer) HealthCheck(interval int) {
-	for {
-		time.Sleep(time.Duration(interval) * time.Second)
-		lb.mu.Lock()
-		for _, server := range lb.servers {
-			resp, err := http.Get(server.URL)
-			server.Alive = (err == nil && resp.StatusCode == http.StatusOK)
-		}
-		lb.mu.Unlock()
-	}
-}
-
-// ServeHTTP forwards requests to the appropriate backend server
+// Function to handle incoming requests and forward them to available servers
 func (lb *LoadBalancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	server := lb.GetLeastConnectionsServer()
+
+	// الحصول على الخادم الذي لديه أقل عدد من الاتصالات النشطة
+	server := lb.getLeastConnectionsServer()
 	if server == nil {
-		http.Error(w, "All servers are unavailable", http.StatusServiceUnavailable)
+		http.Error(w, "No healthy servers available", http.StatusServiceUnavailable)
 		return
 	}
 
-	// Handle requests concurrently
-	go func(srv *ServerState) {
-		defer lb.ReleaseConnection(srv)
+	// زيادة عدد الاتصالات النشطة
+	lb.mu.Lock()
+	server.ActiveConnections++
+	lb.mu.Unlock()
 
-		resp, err := http.Get(srv.URL)
-		if err != nil {
-			http.Error(w, "Error connecting to the server", http.StatusBadGateway)
-			return
+	// تسجيل عملية التوجيه
+	lb.logger.Printf("Redirecting request to %s (Active connections: %d)\n", server.Name, server.ActiveConnections)
+
+	// توجيه الطلب إلى الخادم
+	targetURL, err := url.Parse(server.URL)
+	if err != nil {
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+	proxy := httputil.NewSingleHostReverseProxy(targetURL)
+	proxy.ServeHTTP(w, r)
+
+	// تقليل عدد الاتصالات بعد الانتهاء من معالجة الطلب
+	lb.mu.Lock()
+	server.ActiveConnections--
+	lb.mu.Unlock()
+}
+
+// Function to check server health at intervals
+func (lb *LoadBalancer) HealthCheck(interval time.Duration) {
+	for {
+		// قراءة القيمة من config
+		for i := range lb.servers {
+			resp, err := http.Get(lb.servers[i].URL + "/healthcheck")
+			if err != nil || resp.StatusCode != http.StatusOK {
+				lb.logger.Printf("Server %s is DOWN\n", lb.servers[i].Name)
+				lb.servers[i].Healthy = false
+			} else {
+				lb.servers[i].Healthy = true
+				lb.logger.Printf("Server %s is UP\n", lb.servers[i].Name)
+			}
 		}
-		defer resp.Body.Close()
-
-		// Display the server name in the response
-		w.WriteHeader(resp.StatusCode)
-		fmt.Fprintf(w, "Your request was routed to: %s\n", srv.Name)
-	}(server)
+		// الانتظار للمدة المحددة قبل التحقق مرة أخرى
+		time.Sleep(interval)
+	}
 }
 
 func main() {
-	// Load configuration from file
-	config, err := LoadConfig("config.yaml")
+	// Load configuration
+	configData, err := config.LoadConfig("config.json")
 	if err != nil {
-		log.Fatal("Error loading configuration:", err)
+		log.Fatalf("Error loading config: %v", err)
 	}
 
-	// Ask user to enter the Load Balancer port
-	fmt.Print("Enter the port for the Load Balancer: ")
-	var portStr string
-	fmt.Scanln(&portStr)
-	port, err := strconv.Atoi(portStr)
+	// تحويل HealthCheckInterval إلى time.Duration
+	interval, err := time.ParseDuration(configData.HealthCheckInterval)
 	if err != nil {
-		log.Fatal("Invalid port number")
+		log.Fatalf("Error parsing HealthCheckInterval: %v", err)
 	}
 
-	// Start Load Balancer
-	lb := NewLoadBalancer(config.Servers)
-	go lb.HealthCheck(config.HealthCheckInterval)
+	// Create the Load Balancer
+	loadBalancer := NewLoadBalancer(configData.Servers)
 
-	http.Handle("/", lb)
-	address := fmt.Sprintf(":%d", port)
-	log.Printf("Load Balancer is running on port %d\n", port)
-	log.Fatal(http.ListenAndServe(address, nil))
+	// Start health checks in a separate Goroutine
+	go loadBalancer.HealthCheck(interval)
+
+	// Start the Load Balancer server
+	log.Printf("Load Balancer is running on port %s\n", configData.ListenPort)
+	log.Fatal(http.ListenAndServe(configData.ListenPort, loadBalancer))
 }
