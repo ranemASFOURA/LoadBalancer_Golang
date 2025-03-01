@@ -54,13 +54,10 @@ func (lb *LoadBalancer) getLeastConnectionsServer() *config.Server {
 	return leastLoadedServer
 }
 
-// Function to handle incoming requests and forward them to available servers
 func (lb *LoadBalancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 	// Get the server with the least number of active connections
 	server := lb.getLeastConnectionsServer()
 	if server == nil {
-		// If no server is available, return service unavailable error
 		http.Error(w, "No healthy servers available", http.StatusServiceUnavailable)
 		return
 	}
@@ -68,15 +65,12 @@ func (lb *LoadBalancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Increase active connection count for the selected server
 	lb.mu.Lock()
 	server.ActiveConnections++
+	lb.logger.Printf("Request directed to %s - Active Connections: %d\n", server.Name, server.ActiveConnections)
 	lb.mu.Unlock()
 
-	// Log the request redirection
-	lb.logger.Printf("Redirecting request to %s (Active connections: %d)\n", server.Name, server.ActiveConnections)
-
-	// Redirect the request to the selected server
+	// Redirect request to the selected server
 	targetURL, err := url.Parse(server.URL)
 	if err != nil {
-		// If URL parsing fails, return server error
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
@@ -86,6 +80,7 @@ func (lb *LoadBalancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Decrease active connection count after request is served
 	lb.mu.Lock()
 	server.ActiveConnections--
+	lb.logger.Printf("Request completed on %s - Active Connections: %d\n", server.Name, server.ActiveConnections)
 	lb.mu.Unlock()
 }
 

@@ -1,0 +1,59 @@
+LoadBalancer: 2025/03/01 21:58:42 Server Server1 is DOWN
+LoadBalancer: 2025/03/01 21:58:42 Server Server2 is DOWN
+LoadBalancer: 2025/03/01 21:58:42 Server Server3 is DOWN
+LoadBalancer: 2025/03/01 21:59:42 Server Server1 is UP
+LoadBalancer: 2025/03/01 21:59:42 Server Server2 is DOWN
+LoadBalancer: 2025/03/01 21:59:42 Server Server3 is DOWN
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 1
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 2
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 3
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 4
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 5
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 6
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 7
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 8
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 9
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 10
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 11
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 12
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 13
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 14
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 15
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 16
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 17
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 18
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 19
+LoadBalancer: 2025/03/01 21:59:49 Request directed to Server1 - Active Connections: 20
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 19
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 18
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 17
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 16
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 15
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 14
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 13
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 12
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 11
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 10
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 9
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 8
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 7
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 6
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 5
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 4
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 3
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 2
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 1
+LoadBalancer: 2025/03/01 21:59:49 Request completed on Server1 - Active Connections: 0
+LoadBalancer: 2025/03/01 22:00:42 Server Server1 is UP
+LoadBalancer: 2025/03/01 22:00:42 Server Server2 is UP
+LoadBalancer: 2025/03/01 22:00:42 Server Server3 is UP
+LoadBalancer: 2025/03/01 22:01:11 Request directed to Server1 - Active Connections: 1
+LoadBalancer: 2025/03/01 22:01:11 Request directed to Server2 - Active Connections: 1
+LoadBalancer: 2025/03/01 22:01:11 Request directed to Server3 - Active Connections: 1
+LoadBalancer: 2025/03/01 22:01:11 Request directed to Server1 - Active Connections: 2
+LoadBalancer: 2025/03/01 22:01:11 Request directed to Server2 - Active Connections: 2
+LoadBalancer: 2025/03/01 22:01:11 Request completed on Server1 - Active Connections: 1
+LoadBalancer: 2025/03/01 22:01:11 Request completed on Server2 - Active Connections: 1
+LoadBalancer: 2025/03/01 22:01:12 Request completed on Server1 - Active Connections: 0
+LoadBalancer: 2025/03/01 22:01:12 Request completed on Server2 - Active Connections: 0
+LoadBalancer: 2025/03/01 22:01:12 Request completed on Server3 - Active Connections: 0
