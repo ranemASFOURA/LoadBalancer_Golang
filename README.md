@@ -41,7 +41,7 @@ To test the Load Balancer's behavior with multiple concurrent requests, we have 
 To simulate the requests, run the following command:
 ```sh
 go run simulate_request.go
-
+```
 ## Conclusion
 This project demonstrates how to implement a **Load Balancer in Golang** using **Least Connections** for intelligent request distribution. It ensures efficient resource utilization and enhances fault tolerance through periodic health checks.
 ---
